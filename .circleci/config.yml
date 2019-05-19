@@ -3,6 +3,54 @@ version: 2.1
 orbs:
   composer: itinerisltd/composer@0.2
 
+  gh-page:
+    orbs:
+      composer: itinerisltd/composer@0.2
+    jobs:
+      deploy:
+        executor: composer/seven
+        parameters:
+          ssh-key-fingerprint:
+            type: string
+            description: GitHub deploy key fingerprint
+            default: $SSH_KEY_FINGERPRINT
+          git-user-email:
+            type: string
+            description: git committer email
+            default: dev@itineris.co.uk
+          git-user-name:
+            type: string
+            description: git committer name
+            default: itinerisbot
+        steps:
+          - run: php --version
+          - run: composer --version
+
+          - add_ssh_keys:
+                fingerprints:
+                  - << parameters.ssh-key-fingerprint >>
+          - checkout
+          - composer/restore_composer_cache
+          - run: composer install --no-interaction --no-dev --prefer-dist
+          - composer/save_composer_cache
+          - run: composer satis:build
+
+          - run: git config --global user.email "<< parameters.git-user-email >>"
+          - run: git config --global user.name "<< parameters.git-user-name >>"
+          - deploy:
+              command: .circleci/deploy.sh "$(pwd)/build/*" "$(pwd)/satis.json"
+
+# Wait for https://discuss.circleci.com/t/workflows-seem-incomplete/13461
+only-master-filter: &only-master-filter
+  filters:
+    branches:
+      only: master
+
+deploy-jobs-master: &deploy-jobs-master
+  jobs:
+    - gh-page/deploy:
+        <<: *only-master-filter
+
 workflows:
   test:
     jobs:
@@ -18,3 +66,13 @@ workflows:
           post-steps:
             - composer/exec:
                 command: phpstan:analyse
+  deploy-cron:
+    <<: *deploy-jobs-master
+    triggers:
+      - schedule:
+          <<: *only-master-filter
+          # Hourly
+          cron: "30 * * * *"
+
+  deploy-on-push:
+    <<: *deploy-jobs-master
