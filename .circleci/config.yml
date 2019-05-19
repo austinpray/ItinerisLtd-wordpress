@@ -12,3 +12,9 @@ workflows:
           post-steps:
             - composer/exec:
                 command: style:check
+      - composer/install:
+          name: phpstan-analyse
+          executor: composer/seven
+          post-steps:
+            - composer/exec:
+                command: phpstan:analyse
