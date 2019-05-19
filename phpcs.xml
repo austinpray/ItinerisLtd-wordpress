@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<ruleset name="ItinerisWordPress">
+    <file>./src</file>
+
+    <!-- Show colors in console -->
+    <arg value="-colors"/>
+
+    <!-- Show progress and sniff codes in all reports; Show progress of the run -->
+    <arg value="sp"/>
+
+    <!-- Scan only PHP files -->
+    <arg name="extensions" value="php"/>
+
+    <rule ref="PSR2"/>
+    <rule ref="PSR12"/>
+</ruleset>
