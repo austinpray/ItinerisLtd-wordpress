@@ -1,0 +1,61 @@
+{
+  "name": "itinerisltd/wordpress",
+  "type": "project",
+  "description": "TODO.",
+  "keywords": [
+    "composer",
+    "package",
+    "satis",
+    "wordpress",
+    "wp"
+  ],
+  "homepage": "https://github.com/itinerisltd/wordpress/",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Itineris Limited",
+      "email": "hello@itineris.co.uk",
+      "homepage": "https://itineris.co.uk/",
+      "role": "Company"
+    },
+    {
+      "name": "Tang Rufus",
+      "email": "tangrufus@gmail.com",
+      "homepage": "https://typist.tech/",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": "^7.3",
+    "ext-json": "*",
+    "composer/satis": "dev-master#4c6e51c"
+  },
+  "require-dev": {
+    "phpstan/phpstan": "^0.11.6",
+    "phpstan/phpstan-strict-rules": "^0.11.0",
+    "roave/security-advisories": "dev-master"
+  },
+  "config": {
+    "sort-packages": true
+  },
+  "autoload": {
+    "psr-4": {
+      "Composer\\Itineris\\WordPress\\": "src/"
+    }
+  },
+  "prefer-stable": true,
+  "scripts": {
+    "phpstan:analyse": "phpstan analyse",
+    "satis:build": [
+      "Composer\\Itineris\\WordPress\\GenerateSatisJson::run",
+      "satis build ./satis.json"
+    ],
+    "style:check": "phpcs",
+    "style:fix": "phpcbf"
+  },
+  "support": {
+    "email": "hello@itineris.co.uk",
+    "issues": "https://github.com/ItinerisLtd/wordpress/issues",
+    "source": "https://github.com/ItinerisLtd/wordpress"
+  }
+}

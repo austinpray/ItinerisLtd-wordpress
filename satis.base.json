@@ -1,0 +1,9 @@
+{
+  "name": "itinerisltd/wordpress",
+  "homepage": "https://itinerisltd.github.io/wordpress",
+  "output-dir": "build",
+  "output-html": true,
+  "require-all": true,
+  "require-dev-dependencies": false,
+  "providers": true
+}
