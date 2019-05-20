@@ -11248,6 +11248,43 @@
                     "source": "http://core.trac.wordpress.org/browser"
                 },
                 "uid": 304
+            },
+            "5.2.1-RC2": {
+                "name": "itinerisltd/wordpress",
+                "version": "5.2.1-RC2",
+                "version_normalized": "5.2.1.0-RC2",
+                "dist": {
+                    "type": "zip",
+                    "url": "https://wordpress.org/wordpress-5.2.1-RC2.zip"
+                },
+                "require": {
+                    "roots/wordpress-core-installer": ">=1.0.0"
+                },
+                "type": "wordpress-core",
+                "license": [
+                    "GPL-2.0-or-later"
+                ],
+                "authors": [
+                    {
+                        "name": "WordPress Community",
+                        "homepage": "http://wordpress.org/about/"
+                    }
+                ],
+                "description": "WordPress is web software you can use to create a beautiful website or blog.",
+                "homepage": "http://wordpress.org/",
+                "keywords": [
+                    "blog",
+                    "cms",
+                    "wordpress"
+                ],
+                "support": {
+                    "issues": "http://core.trac.wordpress.org/",
+                    "forum": "http://wordpress.org/support/",
+                    "wiki": "http://codex.wordpress.org/",
+                    "irc": "irc://irc.freenode.net/wordpress",
+                    "source": "http://core.trac.wordpress.org/browser"
+                },
+                "uid": 305
             }
         }
     }
