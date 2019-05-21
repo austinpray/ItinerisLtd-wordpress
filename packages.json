@@ -3,7 +3,7 @@
     "providers-url": "/wordpress/p/%package%$%hash%.json",
     "providers": {
         "itinerisltd/wordpress": {
-            "sha256": "08bcfd4e0b20d4cf2fb5e1695eaec5bbaf7daa7c1cc8fad2b602be13cbcd373a"
+            "sha256": "dff2ca41cf6f2b710aa6fb26bef753c5d37dd143064d840bf0235fa1e8e3940e"
         }
     }
 }
