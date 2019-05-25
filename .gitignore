@@ -4,6 +4,5 @@
 /.php_cs.cache
 /.phpunit.result.cache
 /composer.phar
-/phpunit.xml
 /satis.phar
 /satis.json

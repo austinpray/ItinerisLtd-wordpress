@@ -9,7 +9,14 @@ class GenerateSatisJson
 {
     public static function run(): void
     {
-        $repo = new ReleaseRepo();
+        $html = file_get_contents('https://wordpress.org/download/releases/');
+        $repo = ReleaseRepo::fromReleasesPage($html);
+        if ($repo->isEmpty()) {
+            throw new \RuntimeException('no releases in repo');
+        }
+        $repo = $repo->filter(function (Release $r) {
+            return $r->greaterThanOrEqualTo('4');
+        });
         $filesystem = new Filesystem();
         $satisJson = new SatisJson($repo, $filesystem);
 

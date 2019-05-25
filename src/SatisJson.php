@@ -5,7 +5,6 @@ namespace Composer\Itineris\WordPress;
 
 use RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
-use UnexpectedValueException;
 
 class SatisJson
 {
@@ -24,18 +23,14 @@ class SatisJson
     {
         $json = file_get_contents($templatePath);
         if (! is_string($json)) {
-            throw new UnexpectedValueException('Failed to read ' . $templatePath);
+            throw new RuntimeException('Failed to read ' . $templatePath);
         }
 
         $satis = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
 
-        $packages = array_map(function (Release $release): array {
-            return $release->toPackageArray();
-        }, $this->releaseRepo->all());
-
         $satis['repositories'][] = [
             'type' => 'package',
-            'package' => $packages,
+            'package' => $this->releaseRepo,
         ];
 
         $content = json_encode($satis, JSON_PRETTY_PRINT);

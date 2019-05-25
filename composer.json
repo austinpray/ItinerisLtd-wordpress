@@ -27,12 +27,18 @@
   ],
   "require": {
     "php": "^7.3",
+    "ext-dom": "*",
     "ext-json": "*",
-    "composer/satis": "dev-master#4c6e51c"
+    "ext-libxml": "*",
+    "composer/satis": "dev-master#4c6e51c",
+    "composer/semver": "^1.5",
+    "illuminate/support": "^5.8",
+    "symfony/filesystem": "^4.2"
   },
   "require-dev": {
     "phpstan/phpstan": "^0.11.6",
     "phpstan/phpstan-strict-rules": "^0.11.0",
+    "phpunit/phpunit": "^8.1",
     "roave/security-advisories": "dev-master",
     "squizlabs/php_codesniffer": "^3.4"
   },
@@ -46,9 +52,10 @@
   },
   "prefer-stable": true,
   "scripts": {
+    "test": "phpunit",
     "phpstan:analyse": "phpstan analyse",
     "satis:build": [
-      "Composer\\Itineris\\WordPress\\GenerateSatisJson::run",
+      "@php bin/generate-satis-json.php",
       "satis build ./satis.json"
     ],
     "style:check": "phpcs",

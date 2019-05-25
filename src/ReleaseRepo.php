@@ -3,67 +3,156 @@ declare(strict_types=1);
 
 namespace Composer\Itineris\WordPress;
 
+use Illuminate\Support\Collection;
 use RuntimeException;
+use Composer\Semver;
+use Traversable;
 
-class ReleaseRepo
+/**
+ * Class ReleaseRepo
+ * @package Composer\Itineris\WordPress
+ */
+class ReleaseRepo implements \IteratorAggregate, \JsonSerializable
 {
-    protected const RELEASES_URL = 'https://wordpress.org/download/releases/';
-    protected const KNOWN_RELEASES = 304; // As of 18 May 2019.
+    /**
+     * @var Collection
+     */
+    protected $releases;
 
-    public function all(): array
+    /**
+     * ReleaseRepo constructor.
+     * @param Release[] $releases
+     */
+    public function __construct(array $releases)
     {
-        $html = file_get_contents(static::RELEASES_URL);
-        if (false === $html) {
-            throw new RuntimeException('Failed to download ' . static::RELEASES_URL);
-        }
-
-        preg_match_all(
-            '/<a[^>]*href="(?<releaseUrl>https:\/\/[\S]+\/wordpress-[4-9]\S+[^IIS]\.zip)\.sha1"[^>]*>/',
-            $html,
-            $matches
-        );
-        $releaseUrls = $matches['releaseUrl'] ?? [];
-
-        static::failIfReleaseUrlsNotFound($releaseUrls);
-
-        $releases = array_map(function (string $releaseUrl): ?Release {
-            return Release::parse($releaseUrl);
-        }, $releaseUrls);
-        $releases = array_filter($releases);
-
-        $this->failIfReleaseCannotBeParsed($releases);
-
-        return $releases;
-    }
-
-    protected static function failIfReleaseUrlsNotFound(array $urls): void
-    {
-        if (count($urls) >= static::KNOWN_RELEASES) {
-            return;
-        }
-
-        $message = sprintf(
-            'Only %1$d release URL(s) found on %2$s',
-            count($urls),
-            static::RELEASES_URL
-        );
-        throw new RuntimeException($message);
+        $this->setReleases($releases);
     }
 
     /**
-     * @param array $releases
+     * @param Release[] $releases
      */
-    protected function failIfReleaseCannotBeParsed(array $releases): void
+    public function setReleases(array $releases): void
     {
-        if (count($releases) >= static::KNOWN_RELEASES) {
-            return;
+        $this->releases = Collection::make($releases)
+            ->sort(function (Release $a, Release $b) {
+                $aVer = $a->getVersion();
+                $bVer = $b->getVersion();
+                if (Semver\Comparator::lessThan($aVer, $bVer)) {
+                    return -1;
+                }
+                if (Semver\Comparator::equalTo($aVer, $bVer)) {
+                    return 0;
+                }
+                if (Semver\Comparator::greaterThan($aVer, $bVer)) {
+                    return 1;
+                }
+
+                throw new RuntimeException('unable to sort versions');
+            })
+            ->values();
+    }
+
+    public function filter(callable $fn): self
+    {
+        return new self($this->releases->filter($fn)->toArray());
+    }
+
+    public function count(): int
+    {
+        return $this->releases->count();
+    }
+
+    public function isEmpty(): bool
+    {
+        return $this->releases->isEmpty();
+    }
+
+    public function getLatestStableVersion(): Release
+    {
+        return $this->releases
+            ->filter(function (Release $r) {
+                return Semver\VersionParser::parseStability($r->getVersion()) === 'stable';
+            })
+            ->last();
+    }
+
+    public function getLatestVersion(): Release
+    {
+        return $this->releases->last();
+    }
+
+    /**
+     * @param string $html
+     * @return ReleaseRepo
+     */
+    public static function fromReleasesPage(string $html): ReleaseRepo
+    {
+        if (!$html) {
+            throw new \InvalidArgumentException('blank html');
         }
 
-        $message = sprintf(
-            'Only %1$d release(s) parsed from %2$s',
-            count($releases),
-            static::RELEASES_URL
+        $dom = new \DOMDocument('1.0', 'UTF-8'); // infers encoding from html but set encoding for safety
+        $prev = libxml_use_internal_errors(true);
+        $dom->loadHTML($html);
+        libxml_clear_errors();
+        libxml_use_internal_errors($prev);
+
+
+        $zipLinks = $dom->getElementsByTagName('a');
+        if ($zipLinks->length < 1) {
+            return new self([]);
+        }
+
+        return new self(
+            Collection::make($zipLinks)
+                ->map(function ($zipLink): ?string {
+                    if ($zipLink instanceof \DOMElement) {
+                        $href = $zipLink->getAttribute('href');
+                        if (Release::isValidReleaseUrl($href)) {
+                            return $href;
+                        }
+                    }
+                    return null;
+                })
+                ->filter()
+                ->unique()
+                ->map(function (string $releaseUrl) {
+                    return Release::parse($releaseUrl);
+                })
+                ->toArray()
         );
-        throw new RuntimeException($message);
     }
+
+    /**
+     * Specify data which should be serialized to JSON
+     * @link https://php.net/manual/en/jsonserializable.jsonserialize.php
+     * @return mixed data which can be serialized by <b>json_encode</b>,
+     * which is a value of any type other than a resource.
+     * @since 5.4.0
+     */
+    public function jsonSerialize()
+    {
+        return $this->releases
+            ->map(function (Release $r) {
+                return $r->jsonSerialize();
+            })
+            ->toArray();
+    }
+
+    /**
+     * @return Collection
+     */
+    public function getReleases(): Collection
+    {
+        return $this->releases;
+    }
+
+    /**
+     * @return Traversable
+     */
+    public function getIterator(): Traversable
+    {
+        return $this->getReleases();
+    }
+
 }
